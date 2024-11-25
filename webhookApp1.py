@@ -58,11 +58,14 @@ def alchemy_webhook():
             asset = item.get('asset', 'Unknown')
             tx_hash = item.get("log", {}).get("transactionHash", 'Unknown')
 
+            # Format the tx_hash as a link to the block explorer
+            block_explorer_url = f"https://blockscan.com/tx/{tx_hash}"
+
             formatted_message = f"Transaction Details:\n" \
                                 f"🛸 *From:* {from_address}\n" \
                                 f"🚀 *To:* {to_address}\n" \
                                 f"💰 *Amount:* {value} {asset}\n" \
-                                f"🔗 *Tx Hash:* {tx_hash}\n" \
+                                f"🔗 *Tx Hash:* <{block_explorer_url}|{tx_hash}>\n" \
                                 f"📅 *Date:* {formatted_date}\n"
 
             message_blocks.append({
