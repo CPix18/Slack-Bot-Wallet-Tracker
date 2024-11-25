@@ -74,7 +74,7 @@ def alchemy_webhook():
         slack_message['blocks'] = message_blocks
 
         # Send the message to Slack
-        response = requests.post(SLACK_WEBHOOK_URL, json=slack_message)
+        response = requests.post("SLACK_WEBHOOK_URL", json=slack_message)
 
         # Log Slack response for debugging
         print(f"Slack response status code: {response.status_code}")
