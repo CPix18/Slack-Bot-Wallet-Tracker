@@ -24,7 +24,7 @@ def favicon():
 def alchemy_webhook():
     # Extract payload from Alchemy webhook
     alchemy_payload = request.json
-    
+
     # Log the payload to make sure it's received correctly 
     print(f"Received payload: {json.dumps(alchemy_payload, indent=2)}")
 
@@ -32,7 +32,7 @@ def alchemy_webhook():
         # Extract the creation timestamp from the top-level payload
         timestamp = alchemy_payload.get('createdAt', '')
         formatted_date = ""
-        
+
         if timestamp:
             try:
                 # Format the timestamp into a human-readable date
@@ -41,14 +41,24 @@ def alchemy_webhook():
             except ValueError:
                 formatted_date = "Invalid date format"
 
+        # Extract network information
+        network = alchemy_payload.get('event', {}).get('network', 'Unknown Network')
+
+        # Define block explorer URLs for each network
+        block_explorer_urls = {
+            "ETH_MAINNET": "https://etherscan.io/tx/",
+            "BASE_MAINNET": "https://basescan.org/tx/",
+            "OPT_MAINNET": "https://optimistic.etherscan.io/tx/",
+            "ARB_MAINNET": "https://arbiscan.io/tx/"
+        }
+        default_block_explorer = "https://blockscan.com/tx/"  # Fallback for unsupported networks
+
         # Continue processing the payload
         event = alchemy_payload.get('event', {})
         activity = event.get('activity', [])
-        
 
         slack_message = {"text": "🔔 Alchemy Activity Detected!"}
         message_blocks = []
-
 
         for item in activity:
             # Extract relevant info for Slack message
@@ -58,14 +68,17 @@ def alchemy_webhook():
             asset = item.get('asset', 'Unknown')
             tx_hash = item.get("log", {}).get("transactionHash", 'Unknown')
 
-            # Format the tx_hash as a link to the block explorer
-            block_explorer_url = f"https://blockscan.com/tx/{tx_hash}"
+            # Determine the appropriate block explorer URL
+            block_explorer_url = block_explorer_urls.get(network, default_block_explorer)
+            tx_link = f"{block_explorer_url}{tx_hash}"
 
+            # Create formatted message
             formatted_message = f"Transaction Details:\n" \
+                                f"🌐 *Network:* {network}\n" \
                                 f"🛸 *From:* {from_address}\n" \
                                 f"🚀 *To:* {to_address}\n" \
                                 f"💰 *Amount:* {value} {asset}\n" \
-                                f"🔗 *Tx Hash:* <{block_explorer_url}|{tx_hash}>\n" \
+                                f"🔗 *Tx Hash:* <{tx_link}|{tx_hash}>\n" \
                                 f"📅 *Date:* {formatted_date}\n"
 
             message_blocks.append({
