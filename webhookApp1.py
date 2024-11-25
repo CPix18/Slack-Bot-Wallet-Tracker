@@ -44,9 +44,11 @@ def alchemy_webhook():
         # Continue processing the payload
         event = alchemy_payload.get('event', {})
         activity = event.get('activity', [])
+        
 
         slack_message = {"text": "🔔 Alchemy Activity Detected!"}
         message_blocks = []
+
 
         for item in activity:
             # Extract relevant info for Slack message
@@ -54,11 +56,13 @@ def alchemy_webhook():
             to_address = item.get('toAddress', 'Unknown')
             value = item.get('value', 0)
             asset = item.get('asset', 'Unknown')
+            tx_hash = item.get("log", {}).get("transactionHash", 'Unknown')
 
             formatted_message = f"Transaction Details:\n" \
                                 f"🛸 *From:* {from_address}\n" \
                                 f"🚀 *To:* {to_address}\n" \
                                 f"💰 *Amount:* {value} {asset}\n" \
+                                f"🔗 *Tx Hash:* {tx_hash}\n" \
                                 f"📅 *Date:* {formatted_date}\n"
 
             message_blocks.append({
@@ -74,7 +78,7 @@ def alchemy_webhook():
         slack_message['blocks'] = message_blocks
 
         # Send the message to Slack
-        response = requests.post("SLACK_WEBHOOK_URL", json=slack_message)
+        response = requests.post(SLACK_WEBHOOK_URL, json=slack_message)
 
         # Log Slack response for debugging
         print(f"Slack response status code: {response.status_code}")
